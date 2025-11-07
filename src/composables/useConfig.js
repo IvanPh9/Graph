@@ -5,11 +5,24 @@ export const height = ref(700)
 export const margin = ref(10)
 export const magnit = ref(5)
 
-export const centerChangeable = ref({ x: 100, y: 100 })
+export const centerChangeable = ref({ x: 0, y: 0 })
 
 export function changeCenter(dx, dy) {
-    centerChangeable.value.x += dx
-    centerChangeable.value.y += dy
+    // dx - це нова ЦІЛЬОВА X-координата (напр., mouse.x)
+    // dy - це нова ЦІЛЬОВА Y-координата (напр., mouse.y)
+
+    let currentX = centerChangeable.value.x;
+    let currentY = centerChangeable.value.y;
+
+    // Розраховуємо різницю (відстань до цілі)
+    let distanceX = dx - currentX;
+    let distanceY = dy - currentY;
+
+    const smoothingFactor = 0.1;  // Чим менше значення, тим плавніше рух
+
+    // Рухаємося на ЧАСТИНУ цієї відстані (на 10% в даному випадку)
+    centerChangeable.value.x = currentX + distanceX * smoothingFactor;
+    centerChangeable.value.y = currentY + distanceY * smoothingFactor;
 }
 
 export const center = computed(() => ({

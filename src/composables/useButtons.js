@@ -1,12 +1,30 @@
 // useButtons.js
 import { ref } from "vue"
 import { Button } from "@/models/Button.js"
+import { magnit, width, height, center, centerChangeable } from "./useConfig.js"
 
 export const buttons = ref([])
 
-buttons.value.push(new Button(1, "A", 50, { x: 100, y: 100 }))
-buttons.value.push(new Button(2, "B", 50, { x: 10, y: 10 }))
-buttons.value.push(new Button(3, "C", 50, { x: -100, y: -100 }))
+// Функція-"фабрика" для створення нових кнопок
+export function createNewButton(id, label, size, relativePos) {
+
+    const externalRefs = {
+        magnit,
+        width,
+        height,
+        center,
+        centerChangeable,
+        buttons // Передаємо сам масив для логіки зіткнень
+    }
+
+    const buttonInstance = new Button(id, label, size, relativePos, externalRefs)
+
+    // 3. Додаємо екземпляр до реактивного масиву
+    buttons.value.push(buttonInstance)
+}
+
+createNewButton(1, "А", 50, { x: 50, y: 50 })
+createNewButton(2, "B", 50, { x: -50, y: -50 })
 
 let draggingButton = null
 let offsetX = 0
@@ -19,7 +37,7 @@ export function startMoving(event, button) {
         return
     }
     draggingButton = button
-    preventClick.value = false // <-- Використовуємо .value
+    preventClick.value = false
     const pos = button.position
     offsetX = event.clientX - pos.x
     offsetY = event.clientY - pos.y
@@ -30,13 +48,13 @@ export function startMoving(event, button) {
 
 function onMouseMove(event) {
     if (!draggingButton) return
-    preventClick.value = true // <-- Використовуємо .value. Був рух — не виконувати click
+    preventClick.value = true // Був рух — не виконувати click
     draggingButton.setPositionFromAbsolute(event.clientX - offsetX, event.clientY - offsetY)
 }
 
 function stopMoving(event) {
     if (draggingButton) {
-        draggingButton.switchSeletcion(false) // після drag завжди знімаємо виділення
+        draggingButton.switchSelection(false) // після drag завжди знімаємо виділення
     }
     draggingButton = null
     window.removeEventListener("mousemove", onMouseMove)

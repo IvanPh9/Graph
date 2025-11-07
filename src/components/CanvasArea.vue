@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue"
-import { margin, width, height, magnit, centerChangeable, changeCenter, increaseMagnit, decreaseMagnit } from "@/composables/useConfig.js"
+import {
+  margin, width, height, magnit, centerChangeable, center, changeCenter, increaseMagnit, decreaseMagnit,} from "@/composables/useConfig.js"
 import { lines, previewLine } from "@/composables/useLines.js"
 import { buttons, preventClick } from "@/composables/useButtons.js"
 
@@ -9,12 +10,22 @@ import {onMouseMovePreview} from "@/composables/useLines.js";
 
 import ButtonNode from "./ButtonNode.vue"
 import ConnectionLine from "./ConnectionLine.vue"
-
+import {startMovingCenter} from "@/composables/useCanvas.js";
 
 window.addEventListener("mousemove", onMouseMovePreview)
 window.addEventListener("keydown", handleKeyPress)
 
 const isMouseDown = ref(false);
+
+function handleMouseDown(event) {
+
+  const hoveredButton = buttons.value.find(b => b.hovered)
+  if (hoveredButton) {
+    return
+  }
+
+  startMovingCenter(event)
+}
 
 </script>
 
@@ -22,7 +33,7 @@ const isMouseDown = ref(false);
   <div class="flex">
     <div class="relative border rounded-3xl"
          :style="{ width: width + 'px', height: height + 'px', margin: margin + 'px'}"
-         @mousedown="isMouseDown.value = true"  @mouseup="isMouseDown.value = false">
+         @mousedown="e => handleMouseDown(e)">
       <svg :width="width" :height="height">
         <ConnectionLine v-for="(line, i) in lines" :key="i" :line="line" />
         <line v-if="previewLine"
@@ -32,7 +43,7 @@ const isMouseDown = ref(false);
               :y2="previewLine.y"
               stroke="blue" stroke-width="1" stroke-dasharray="5,5"/>
       </svg>
-
+      <div :style="{ position: 'absolute', top: center.y + 'px', left: center.x + 'px', width: '5px', height: '5px', backgroundColor: 'red', transform: 'translate(-50%, -50%)' }"></div>
       <ButtonNode v-for="b in buttons" :key="b.id" :button="b" />
     </div>
     <div class="flex-initial">
@@ -54,6 +65,7 @@ const isMouseDown = ref(false);
             <td class="border border-slate-300 px-4 py-2">{{ b.relativePos.x }}</td>
             <td class="border border-slate-300 px-4 py-2">{{ b.relativePos.y }}</td>
             <td class="border border-slate-300 px-4 py-2">{{ b.selected }}</td>
+            <td class="border border-slate-300 px-4 py-2">{{b.hovered}}</td>
           </tr>
           </tbody>
         </table>
